@@ -5,7 +5,7 @@ description = "Password"
 regex = '''(?i)[\w]*password[\w]*[:=>, ]+['"][\S]{3,}['"]'''
 [[regexes]]
 description = "Sinatra session secret"
-regex = '''(?i)session_secret[:=>, ]+['"][0-9a-zA-Z]{3,}['"]'''
+regex = '''(?i)session_secret.*['"][0-9a-zA-Z]{3,}['"]'''
 [[regexes]]
 description = "Webhook secret"
 regex = '''(?i)webhook_secret[:=>, ]+['"][\S]{3,}['"]'''
