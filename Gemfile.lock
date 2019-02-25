@@ -2,23 +2,23 @@ GEM
   remote: https://rubygems.org/
   specs:
     json (2.1.0)
-    mustermann (1.0.1)
-    rack (2.0.3)
-    rack-protection (2.0.0)
+    mustermann (1.0.3)
+    rack (2.0.6)
+    rack-protection (2.0.5)
       rack
-    sinatra (2.0.0)
+    sinatra (2.0.5)
       mustermann (~> 1.0)
       rack (~> 2.0)
-      rack-protection (= 2.0.0)
+      rack-protection (= 2.0.5)
       tilt (~> 2.0)
-    tilt (2.0.8)
+    tilt (2.0.9)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   json
-  sinatra
+  sinatra (>= 2.0.2)
 
 BUNDLED WITH
-   1.13.6
+   1.16.1
