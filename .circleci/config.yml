@@ -1,5 +1,11 @@
 version: 2.1
 
+# Default slack config
+default-slack-config:
+  &default-slack-config
+  channel: franklin-notification
+  webhook: ${SLACK_WEBHOOK}
+
 orbs:
   docker-publish: circleci/docker-publish@0.1.7
   gitleaks: upenn-libraries/gitleaks@0.1.0
@@ -18,10 +24,9 @@ jobs:
               -q -t 5 --retry-connrefused -O /dev/null \
               http://localhost:80/
       - slack/status:
-          channel: franklin-notification
+          <<: *default-slack-config
           fail_only: true
           failure_message: ":red_circle: Smoke Test Failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
-          webhook: ${SLACK_WEBHOOK}
 
 workflows:
   build_and_publish:
@@ -41,10 +46,9 @@ workflows:
                   echo "export GIT_URL=<< pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<< pipeline.git.revision >>" >> $BASH_ENV
                   source $BASH_ENV
             - slack/status:
-                channel: franklin-notification
+                <<: *default-slack-config
                 failure_message: ":red_circle: Docker publish failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
                 success_message: ":tada: Docker publish succeeded! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
-                webhook: ${SLACK_WEBHOOK}
       - test:
           requires:
             - docker-publish/publish
