@@ -18,10 +18,10 @@ jobs:
               -q -t 5 --retry-connrefused -O /dev/null \
               http://localhost:80/
       - slack/status:
-        channel: franklin-notification
-        fail_only: true
-        failure_message: ":red_circle: Smoke Test Failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
-        webhook: ${SLACK_WEBHOOK}
+          channel: franklin-notification
+          fail_only: true
+          failure_message: ":red_circle: Smoke Test Failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
+          webhook: ${SLACK_WEBHOOK}
 
 workflows:
   build_and_publish:
