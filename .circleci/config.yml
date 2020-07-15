@@ -26,7 +26,7 @@ jobs:
           command: |
             wget \
               -q -t 5 --retry-connrefused -O /dev/null \
-              http://localhost:443/
+              http://localhost:80/
       - slack/status:
           <<: *default-slack-config
           fail_only: true
