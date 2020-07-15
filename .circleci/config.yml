@@ -27,14 +27,10 @@ jobs:
             wget \
               -q -t 5 --retry-connrefused -O /dev/null \
               http://localhost:443/
-      - run:
-          command: |
-            echo "export GIT_COMMIT_DESC='$(git --git-dir $HOME/project/.git log --format=%B -n 1 $CIRCLE_SHA1)'" >> $BASH_ENV
-            source $BASH_ENV
       - slack/status:
           <<: *default-slack-config
           fail_only: true
-          failure_message: ":red_circle: Smoke Test Failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
+          failure_message: ":red_circle: Smoke Test Failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>"
 
 workflows:
   build_and_publish:
