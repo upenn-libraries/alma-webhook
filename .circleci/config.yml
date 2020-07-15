@@ -18,8 +18,6 @@ jobs:
       - image: quay.io/upennlibraries/alma-webhook:${CIRCLE_SHA1}
     environment:
       GIT_URL: << pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<< pipeline.git.revision >>
-      BASH_ENV: /etc/profile
-    shell: /bin/sh -leo pipefail
     steps:
       - run:
           name: Smoke Test Container
