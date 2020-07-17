@@ -37,6 +37,7 @@ jobs:
             --label "edu.upenn.library.circleci.workflow-id=${CIRCLE_WORKFLOW_ID}"
           image: upennlibraries/alma-webhook
           registry: quay.io
+          tag: "${CIRCLE_SHA1},${CIRCLE_SHA1:0:7}"
       - docker/push:
           image: upennlibraries/alma-webhook
           registry: quay.io
