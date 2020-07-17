@@ -12,6 +12,37 @@ orbs:
   slack: circleci/slack@3.4.2
 
 jobs:
+  build_and_push:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Set Environment Variables for Slack Notification
+          command: |
+            echo "export GIT_COMMIT_DESC='$(git --git-dir $HOME/project/.git log --format=%B -n 1 $CIRCLE_SHA1)'" >> $BASH_ENV
+            echo "export GIT_URL=<< pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<< pipeline.git.revision >>" >> $BASH_ENV
+            source $BASH_ENV
+      - docker/check
+      - docker/build:
+          extra_build_args: >-
+            --label "edu.upenn.library.build-system=circleci"
+            --label "edu.upenn.library.circleci.build-number=${CIRCLE_BUILD_NUM}"
+            --label "edu.upenn.library.circleci.build-timestamp=$(date -uIs)"
+            --label "edu.upenn.library.circleci.build-url=${CIRCLE_BUILD_URL}"
+            --label "edu.upenn.library.circleci.git-branch=${CIRCLE_BRANCH}"
+            --label "edu.upenn.library.circleci.git-commit=${CIRCLE_SHA1}"
+            --label "edu.upenn.library.circleci.git-repo-url=${CIRCLE_REPOSITORY_URL}"
+            --label "edu.upenn.library.circleci.workflow-id=${CIRCLE_WORKFLOW_ID}"
+          image: upennlibraries/alma-webhook
+      - docker/push:
+          image: upennlibraries/alma-webhook
+          registry: quay.io
+          tag: "${CIRCLE_SHA1},${CIRCLE_SHA1:0:7}"
+      - slack/status:
+          <<: *default-slack-config
+          failure_message: ":red_circle: Docker publish failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
+          success_message: ":tada: Docker publish succeeded! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
   test:
     docker:
       - image: circleci/ruby:2.6.1
@@ -36,33 +67,10 @@ workflows:
       - gitleaks/check_local:
           image: quay.io/upennlibraries/gitleaks:v1.24.0
           options: --redact --repo-config
-      - docker/publish:
+      - build_and_push:
           context: quay.io
-          extra_build_args: >-
-            --label "edu.upenn.library.build-system=circleci"
-            --label "edu.upenn.library.circleci.build-number=${CIRCLE_BUILD_NUM}"
-            --label "edu.upenn.library.circleci.build-timestamp=$(date -uIs)"
-            --label "edu.upenn.library.circleci.build-url=${CIRCLE_BUILD_URL}"
-            --label "edu.upenn.library.circleci.git-branch=${CIRCLE_BRANCH}"
-            --label "edu.upenn.library.circleci.git-commit=${CIRCLE_SHA1}"
-            --label "edu.upenn.library.circleci.git-repo-url=${CIRCLE_REPOSITORY_URL}"
-            --label "edu.upenn.library.circleci.workflow-id=${CIRCLE_WORKFLOW_ID}"
-          image: upennlibraries/alma-webhook
-          post-steps:
-            - run:
-                name: Set Environment Variables for Slack Notification
-                command: |
-                  echo "export GIT_COMMIT_DESC='$(git --git-dir $HOME/project/.git log --format=%B -n 1 $CIRCLE_SHA1)'" >> $BASH_ENV
-                  echo "export GIT_URL=<< pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<< pipeline.git.revision >>" >> $BASH_ENV
-                  source $BASH_ENV
-            - slack/status:
-                <<: *default-slack-config
-                failure_message: ":red_circle: Docker publish failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
-                success_message: ":tada: Docker publish succeeded! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
-          registry: quay.io
           requires:
             - gitleaks/check_local
-          tag: "${CIRCLE_SHA1},${CIRCLE_SHA1:0:7}"
       - test:
           requires:
-            - docker/publish
+            - build_and_push
