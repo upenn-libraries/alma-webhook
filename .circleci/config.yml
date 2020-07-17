@@ -38,10 +38,6 @@ jobs:
           image: upennlibraries/alma-webhook
           registry: quay.io
           tag: "${CIRCLE_SHA1},${CIRCLE_SHA1:0:7}"
-      - run:
-          name: Test step failure
-          command: |
-            exit 1
       - docker/push:
           image: upennlibraries/alma-webhook
           registry: quay.io
