@@ -23,7 +23,8 @@ jobs:
             echo "export GIT_COMMIT_DESC='$(git --git-dir $HOME/project/.git log --format=%B -n 1 $CIRCLE_SHA1)'" >> $BASH_ENV
             echo "export GIT_URL=<< pipeline.project.git_url >>/compare/<< pipeline.git.base_revision >>..<< pipeline.git.revision >>" >> $BASH_ENV
             source $BASH_ENV
-      - docker/check
+      - docker/check:
+          registry: quay.io
       - docker/build:
           extra_build_args: >-
             --label "edu.upenn.library.build-system=circleci"
@@ -35,6 +36,7 @@ jobs:
             --label "edu.upenn.library.circleci.git-repo-url=${CIRCLE_REPOSITORY_URL}"
             --label "edu.upenn.library.circleci.workflow-id=${CIRCLE_WORKFLOW_ID}"
           image: upennlibraries/alma-webhook
+          registry: quay.io
       - docker/push:
           image: upennlibraries/alma-webhook
           registry: quay.io
