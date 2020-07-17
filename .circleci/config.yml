@@ -38,7 +38,15 @@ workflows:
           options: --redact --repo-config
       - docker-publish/publish:
           context: quay.io
-          registry: quay.io
+          extra_build_args: >-
+            --label "edu.upenn.library.build-system=circleci"
+            --label "edu.upenn.library.circleci.build-number=${CIRCLE_BUILD_NUM}"
+            --label "edu.upenn.library.circleci.build-timestamp=$(date -uIs)"
+            --label "edu.upenn.library.circleci.build-url=${CIRCLE_BUILD_URL}"
+            --label "edu.upenn.library.circleci.git-branch=${CIRCLE_BRANCH}"
+            --label "edu.upenn.library.circleci.git-commit=${CIRCLE_SHA1}"
+            --label "edu.upenn.library.circleci.git-repo-url=${CIRCLE_REPOSITORY_URL}"
+            --label "edu.upenn.library.circleci.workflow-id=${CIRCLE_WORKFLOW_ID}"
           image: upennlibraries/alma-webhook
           post-steps:
             - run:
@@ -51,6 +59,10 @@ workflows:
                 <<: *default-slack-config
                 failure_message: ":red_circle: Docker publish failed! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
                 success_message: ":tada: Docker publish succeeded! ${CIRCLE_USERNAME}'s workflow (<${CIRCLE_BUILD_URL}|${CIRCLE_JOB}>) in <${GIT_URL}|${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}>, Message: ${GIT_COMMIT_DESC}"
+          registry: quay.io
+          requires:
+            - gitleaks/check_local
+          tag: "${CIRCLE_SHA1},${CIRCLE_SHA1:0:7}"
       - test:
           requires:
             - docker-publish/publish
