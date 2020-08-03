@@ -11,6 +11,7 @@ GEM
       rack (~> 2.0)
       rack-protection (= 2.0.5)
       tilt (~> 2.0)
+    slack-notifier (2.3.2)
     tilt (2.0.9)
 
 PLATFORMS
@@ -19,6 +20,7 @@ PLATFORMS
 DEPENDENCIES
   json
   sinatra (>= 2.0.2)
+  slack-notifier
 
 BUNDLED WITH
-   1.16.1
+   1.17.3
