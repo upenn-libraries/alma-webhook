@@ -1,5 +1,8 @@
+require 'dotenv/load'
 require 'json'
 require 'base64'
+require 'sinatra'
+require 'slack-notifier'
 
 # echo back challenge to confirm endpoint viability
 get '/' do
@@ -19,9 +22,9 @@ post '/' do
     return
   end
 
-  body = JSON.parse(body)
+  webhook_response = JSON.parse(body)
   slack = Slack::Notifier.new ENV['ALMA_WEBHOOKS_SLACK_WEBHOOK']
-  slack.ping "```#{body}```"
+  slack.ping "```#{webhook_response}```" unless ENV['RACK_ENV'] == 'test'
   response.status = 200
   response.close
 end
