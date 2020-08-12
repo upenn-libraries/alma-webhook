@@ -9,3 +9,4 @@
 !.env.example
 
 *.sh
+!docker-entrypoint.sh
