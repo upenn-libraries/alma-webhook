@@ -1,27 +1,31 @@
 # Global Build Args ----------------------------------
-# Ruby version
-ARG RUBY_VERSION=2.5.1
+# Deployment environment
+ARG APP_ENV=production
 
-# Linus distro
+# Linux distro
 ARG IMAGE_DISTRO=alpine
 
 # The root of our app
 ARG RAILS_ROOT=/home/app
 
+# Ruby version
+ARG RUBY_VERSION=2.5.1
 
-# Base Image to build from
+
+# Base Image -----------------------------------------
 FROM ruby:${RUBY_VERSION}-${IMAGE_DISTRO} AS baseimage
 LABEL description="Base image used by other stages"
 
-# Build Image ----------------------------------------------
+
+# Build Image ----------------------------------------
 FROM baseimage AS build
 LABEL description="Image to build our application"
 
+ARG APP_ENV
+ENV APP_ENV=${APP_ENV}
+
 ARG RAILS_ROOT
 ENV RAILS_ROOT=${RAILS_ROOT}
-
-ARG APP_ENV=production
-ENV APP_ENV=${APP_ENV}
 
 ENV BUNDLE_APP_CONFIG="${RAILS_ROOT}/.bundle"
 
@@ -38,26 +42,31 @@ RUN bundle config --global frozen 1 && \
 
 COPY . .
 
-# Final Image -----------------------------------------
+# Final Image ----------------------------------------
 FROM baseimage
 LABEL description="Final image of our application"
+
+ARG APP_ENV
+ENV APP_ENV=${APP_ENV}
 
 ARG RAILS_ROOT
 ENV RAILS_ROOT=${RAILS_ROOT}
 
-# Set Rails env
 ENV BUNDLE_APP_CONFIG="${RAILS_ROOT}/.bundle"
 
 COPY --from=build ${RAILS_ROOT} ${RAILS_ROOT}
+COPY ./docker-entrypoint.sh /usr/local/bin/
 
 WORKDIR ${RAILS_ROOT}
 
-# Add app user and install su-exec
-RUN chmod +x ./docker-entrypoint.sh && \
+# Make entrypoint executable, add app user, and install dependencies
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
     addgroup -S app && adduser -S app -G app -h ${RAILS_ROOT} && \
-    apk add --no-cache 'su-exec>=0.2'
+    apk add --no-cache \
+        shadow \
+        'su-exec>=0.2'
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 3000
 

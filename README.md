@@ -51,3 +51,9 @@ By default the container will accept connections on port 3000. If necessary you 
 ```
 docker run -d -p 80:3000 alma-webhook
 ```
+
+To run the container in a development environment map the project dir into the container and include the env variables `APP_UID` and `APP_GID` when running:
+
+```
+docker run -d -v ${PWD}:/home/app -e APP_UID=$(id -u) -e APP_GID=$(id -g) alma-webhook
+```
