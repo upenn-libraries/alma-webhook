@@ -1,4 +1,9 @@
+.bundle
 .dockerignore
 .gitignore
+
 *.sh
+!docker-entrypoint.sh
+
 Dockerfile
+vendor
