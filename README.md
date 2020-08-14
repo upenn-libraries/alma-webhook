@@ -29,7 +29,7 @@ This docker image is built from the [Official Docker Image](https://hub.docker.c
 To build an image for production run the following command from the project's root dir:
 
 ```
-docker build -t alma-webhook
+docker build -t alma-webhook .
 ```
 
 To build an image for development or testing set the build argument `APP_ENV=development`:
