@@ -9,7 +9,7 @@ ARG IMAGE_DISTRO=alpine
 ARG RAILS_ROOT=/home/app
 
 # Ruby version
-ARG RUBY_VERSION=2.5.1
+ARG RUBY_VERSION=2.6.6
 
 
 # Base Image -----------------------------------------
