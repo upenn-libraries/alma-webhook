@@ -23,7 +23,7 @@ post '/' do
   end
 
   webhook_response = JSON.parse(body)
-  slack = Slack::Notifier.new ENV['ALMA_WEBHOOKS_SLACK_WEBHOOK']
+  slack = Slack::Notifier.new ENV['SLACK_WEBHOOK']
   slack.ping "```#{webhook_response}```" unless ENV['RACK_ENV'] == 'test'
   response.status = 200
   response.close
