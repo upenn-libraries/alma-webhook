@@ -22,7 +22,7 @@ This docker image is built from the [Official Docker Image](https://hub.docker.c
 | APP_ENV      | production | The environment to build the image. If set to `development` the build will install gems in the development and test groups |
 | IMAGE_DISTRO | alpine     | The Linux distribution used to create the image                                                                            |
 | RAILS_ROOT   | /home/app  | The project location                                                                                                       |
-| RUBY_VERSION | 2.5.1      | The ruby version used to create the image                                                                                  |
+| RUBY_VERSION | 2.6.6      | The ruby version used to create the image                                                                                  |
 
 ### Building an image
 
