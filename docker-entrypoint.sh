@@ -25,6 +25,9 @@ if [[ "$1" == "bundle" ]] && [[ "$2" == "exec" ]] && [[ "$3" == "rackup" ]]; the
     usermod -u ${APP_UID} app
     groupmod -g ${APP_GID} app
 
+    # Install deps
+    apk add --no-cache build-base
+
     # Install the gems
     echo "Installing gems"
     bundle install --with development:test -j$(nproc) --retry 3 --path=vendor/bundle

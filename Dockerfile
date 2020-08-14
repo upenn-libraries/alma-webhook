@@ -34,11 +34,14 @@ WORKDIR ${RAILS_ROOT}
 COPY Gemfile* ./
 
 # Install
-RUN bundle config --global frozen 1 && \
+RUN apk add --no-cache --virtual .build-deps \
+        build-base && \
+    bundle config --global frozen 1 && \
     bundle install $([ "$APP_ENV" == "development" ] && printf %s '--with development:test --path=vendor/bundle' || printf %s '--deployment') -j$(nproc) --retry 3 && \
     rm -rf vendor/bundle/ruby/*/cache/*.gem && \
     find vendor/bundle/ruby/*/gems/ \( -name "*.c" -o -name "*.o" \) -delete && \
-    rm -rf tmp/cache app/assets vendor/assets lib/assets spec
+    rm -rf tmp/cache app/assets vendor/assets lib/assets spec && \
+    apk del .build-deps
 
 COPY . .
 
