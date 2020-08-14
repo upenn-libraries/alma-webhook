@@ -27,7 +27,7 @@ if [[ "$1" == "bundle" ]] && [[ "$2" == "exec" ]] && [[ "$3" == "rackup" ]]; the
 
     # Install the gems
     echo "Installing gems"
-    bundle install --with development:test:assets -j$(nproc) --retry 3 --path=vendor/bundle
+    bundle install --with development:test -j$(nproc) --retry 3 --path=vendor/bundle
   fi
 
   # If the current user is root then set file permissions to and run the application as the app user

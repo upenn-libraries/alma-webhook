@@ -35,7 +35,7 @@ COPY Gemfile* ./
 
 # Install
 RUN bundle config --global frozen 1 && \
-    bundle install $([ "$APP_ENV" == "development" ] && printf %s '--with development:test:assets' || printf %s '--without development:test:assets') -j$(nproc) --retry 3 --path=vendor/bundle && \
+    bundle install $([ "$APP_ENV" == "development" ] && printf %s '--with development:test --path=vendor/bundle' || printf %s '--deployment') -j$(nproc) --retry 3 && \
     rm -rf vendor/bundle/ruby/*/cache/*.gem && \
     find vendor/bundle/ruby/*/gems/ \( -name "*.c" -o -name "*.o" \) -delete && \
     rm -rf tmp/cache app/assets vendor/assets lib/assets spec
