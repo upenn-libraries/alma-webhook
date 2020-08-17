@@ -3,6 +3,9 @@ require 'json'
 require 'base64'
 require 'sinatra'
 require 'slack-notifier'
+require './lib/slack_notifier'
+require './lib/webhook_bib_response'
+require './lib/message_validator'
 
 # echo back challenge to confirm endpoint viability
 get '/' do
@@ -13,27 +16,35 @@ end
 
 # upon validating EXL sig header, push Webhook notification body to Slack
 post '/' do
-  body = request.body.read
-  exlibris_signature = request.env['X-Exl-Signature'] || request.env['HTTP_X_EXL_SIGNATURE']
-  unless valid_signature?(body, exlibris_signature)
+  unless MessageValidator.valid? request
     response.status = 401
     response.write({ error_message: 'Invalid Signature' }.to_json)
     response.close
     return
   end
 
-  webhook_response = JSON.parse(body)
-  slack = Slack::Notifier.new ENV['WEBHOOK_SLACK_WEBHOOK']
-  slack.ping "```#{webhook_response}```" unless ENV['RACK_ENV'] == 'test'
-  response.status = 200
-  response.close
-end
+  bib_action = WebhookBibResponse.new request.body.read
 
-# validate signature
-def valid_signature?(body, signature)
-  digest = OpenSSL::Digest.new 'sha256'
-  hmac = OpenSSL::HMAC.new ENV['WEBHOOK_SECRET'], digest
-  hmac.update body
-  hash = Base64.strict_encode64 hmac.digest
-  hash == signature
+  unless bib_action.mms_id
+    response.status = 400
+    response.write({ error_message: 'Failed to extract MMS ID from response' }.to_json)
+    response.close
+    return
+  end
+
+  slack = SlackNotifier.new
+
+  case bib_action.event
+  when 'BIB_UPDATED'
+    # do noting for now
+    # slack.send bib_action.template
+  when 'BIB_DELETED'
+    # do nothing for now
+    # slack.send bib_action.template
+  when 'BIB_CREATED'
+    slack.ping bib_action.template
+  end
+
+  response.status = 204
+  response.close
 end
