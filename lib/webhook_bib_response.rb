@@ -38,7 +38,7 @@ class WebhookBibResponse
 
   def template
     <<~MARKDOWN
-      #{event}: `#{mms_id}`
+      #{event}: `#{mms_id}`, "#{title}"
     MARKDOWN
   end
 end
