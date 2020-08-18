@@ -1,8 +1,8 @@
 require 'dotenv/load'
-require 'json'
-require 'base64'
 require 'sinatra'
-require 'slack-notifier'
+require './lib/slack_notifier'
+require './lib/webhook_bib_response'
+require './lib/message_validator'
 
 # echo back challenge to confirm endpoint viability
 get '/' do
@@ -13,27 +13,44 @@ end
 
 # upon validating EXL sig header, push Webhook notification body to Slack
 post '/' do
-  body = request.body.read
-  exlibris_signature = request.env['X-Exl-Signature'] || request.env['HTTP_X_EXL_SIGNATURE']
-  unless valid_signature?(body, exlibris_signature)
+  request_body = request.body.read
+  unless MessageValidator.valid?(
+      request_body,
+      request.env['X-Exl-Signature'] || request.env['HTTP_X_EXL_SIGNATURE']
+  )
     response.status = 401
     response.write({ error_message: 'Invalid Signature' }.to_json)
     response.close
     return
   end
 
-  webhook_response = JSON.parse(body)
-  slack = Slack::Notifier.new ENV['WEBHOOK_SLACK_WEBHOOK']
-  slack.ping "```#{webhook_response}```" unless ENV['RACK_ENV'] == 'test'
-  response.status = 200
-  response.close
-end
+  bib_action = WebhookBibResponse.new request_body
 
-# validate signature
-def valid_signature?(body, signature)
-  digest = OpenSSL::Digest.new 'sha256'
-  hmac = OpenSSL::HMAC.new ENV['WEBHOOK_SECRET'], digest
-  hmac.update body
-  hash = Base64.strict_encode64 hmac.digest
-  hash == signature
+  # No MMS ID? Nothing we can do with this hook
+  unless bib_action.mms_id
+    response.status = 400
+    response.write({ error_message: 'Failed to extract MMS ID from response' }.to_json)
+    response.close
+    return
+  end
+
+  # Based on the BIB action, do something (for now, post a Slack notification)
+  # Use a response status with light semantic value, mostly for spec purposes
+  # as Alma/ExL likely doesn't care about response codes.
+  response.status = case bib_action.event
+                    when 'BIB_UPDATED'
+                      # do noting for now
+                      # SlackNotifier.send bib_action.template
+                      204
+                    when 'BIB_DELETED'
+                      # do nothing for now
+                      # SlackNotifier.send bib_action.template
+                      204
+                    when 'BIB_CREATED'
+                      SlackNotifier.ping bib_action.template
+                      200
+                    else
+                      500
+                    end
+  response.close
 end
