@@ -71,7 +71,12 @@ RSpec.describe "Alma Webhook receiver app", type: :request do
               "anies"=>["__XML__"], "requests"=>nil, "link"=>nil},
           "holding"=>nil, "item"=>nil, "portfolio"=>nil, "representation"=>nil
       }.to_json
-    end
+  end
+  let(:unexpected_action_json) do
+    { "event" => { "value"=>"BIB_CONJURED" },
+        "bib" => { "mms_id"=>"9977795539303681", "anies"=>[] },
+    }.to_json
+  end
   context 'GET' do
     it "respond at /" do
       get '/'
@@ -84,15 +89,13 @@ RSpec.describe "Alma Webhook receiver app", type: :request do
   end
   context 'POST' do
     context 'validates message integrity' do
-      it 'returns 200 if signature header is valid' do
+      it 'returns 204 if signature header is valid' do
         header 'X-Exl-Signature', 'm7izclXuZdi/sg9d1RfmJ50gY2rDqJyLGhfFmC2pp6I='
-        header 'CONTENT_TYPE', 'application/json'
         post '/', bib_updated_json
         expect(last_response.status).to eq 204
       end
       it 'returns 401 if signature header is NOT valid' do
         header 'X-Exl-Signature', 'baaaaaaad'
-        header 'CONTENT_TYPE', 'application/json'
         post '/', bib_updated_json
         expect(last_response.status).to eq 401
       end
@@ -101,13 +104,17 @@ RSpec.describe "Alma Webhook receiver app", type: :request do
       before do
         allow(MessageValidator).to receive(:valid?).and_return true
       end
-      it 'by sending a slack message if created bib' do
+      it 'by returning a 200 if created bib' do
         post '/', bib_added_json
-        expect_any_instance_of(SlackNotifier).to receive(:ping)
+        expect(last_response.status).to eq 200
       end
-      it 'by NOT sending a slack message if updated bib' do
+      it 'by returning a 204 if updated bib' do
         post '/', bib_updated_json
-        expect(SlackNotifier).not_to receive(:ping)
+        expect(last_response.status).to eq 204
+      end
+      it 'by returning a 500 if the action is unexpected' do
+        post '/', unexpected_action_json
+        expect(last_response.status).to eq 500
       end
     end
   end
