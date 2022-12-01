@@ -4,9 +4,10 @@ GEM
     diff-lcs (1.4.4)
     dotenv (2.7.2)
     json (2.3.1)
-    mustermann (1.0.3)
-    rack (2.2.3)
-    rack-protection (2.0.5)
+    mustermann (2.0.2)
+      ruby2_keywords (~> 0.0.1)
+    rack (2.2.4)
+    rack-protection (2.2.3)
       rack
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -23,13 +24,14 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
     rspec-support (3.9.3)
-    sinatra (2.0.5)
-      mustermann (~> 1.0)
-      rack (~> 2.0)
-      rack-protection (= 2.0.5)
+    ruby2_keywords (0.0.5)
+    sinatra (2.2.3)
+      mustermann (~> 2.0)
+      rack (~> 2.2)
+      rack-protection (= 2.2.3)
       tilt (~> 2.0)
     slack-notifier (2.3.2)
-    tilt (2.0.9)
+    tilt (2.0.11)
 
 PLATFORMS
   ruby
